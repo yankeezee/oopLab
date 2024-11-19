@@ -1,4 +1,4 @@
-#include "Furniture.h"
+#include "Furniture.cpp"
 #include <cassert>
 #include <iostream>
 
@@ -12,21 +12,21 @@ int main() {
     assert(object1.getCoordY() == 0);
     assert(object1.getCoordZ() == 0);
 
-    Furniture object2(1.5, 2, 0.5, 0, 0, 0.5);
-    assert(object2.getX() == 1.5);
-    assert(object2.getY() == 2);
+    Furniture object2(0.5,  0.5, 0.5, 0, 0, 0.5);
+    assert(object2.getX() == 0.5);
+    assert(object2.getY() ==  0.5);
     assert(object2.getZ() == 0.5);
     assert(object2.getCoordX() == 0);
     assert(object2.getCoordY() == 0);
     assert(object2.getCoordZ() == 0.5);
 
     Furniture object3(object2);
-    assert(object3.getX() == 1.5);
-    assert(object3.getY() == 2);
-    assert(object3.getZ() == 0.5);
-    assert(object3.getCoordX() == 0);
-    assert(object3.getCoordY() == 0);
-    assert(object3.getCoordZ() == 0.5);
+    assert(object2.getX() == 0.5);
+    assert(object2.getY() ==  0.5);
+    assert(object2.getZ() == 0.5);
+    assert(object2.getCoordX() == 0);
+    assert(object2.getCoordY() == 0);
+    assert(object2.getCoordZ() == 0.5);
 
     // Тестирование класса KitchenCabinet
     KitchenCabinet cabinet1;
@@ -39,7 +39,7 @@ int main() {
     KitchenCabinet cabinet3(cabinet2);
     assert(cabinet3.getMaterial() == "Древесина");
 
-    Furniture object4(1, 1, 0.6, 1, 0, 0.6);
+    Furniture object4(0.6, 0.6, 0.6, 10, 10, 0);
     Furniture object5(2, 1, 1, 10, 10, 50);
     KitchenCabinet cabinet4(object4, "ДСП");
     KitchenCabinet cabinet5(object5, "Металл");
@@ -47,15 +47,47 @@ int main() {
     assert(!cabinet2.intersects(object5)); 
     assert(cabinet2.intersects(object4));  
 
+    Furniture* metallConstruct = &cabinet5; 
+    metallConstruct -> identify(); // It is Металл kitchen cabinet!
+
      // Тестирование класса Appliance
-    Appliance fridge("Холодильник", 0.6, 0.6, 1.8, 0, 0, 0);
+    Appliance fridge("Холодильник", object4);
     assert(fridge.getName() == "Холодильник");
     assert(!fridge.isOn());
+    Furniture* _fridge = &fridge; 
+    _fridge -> identify(); // It is Холодильник!
 
     fridge.turnOn();
     assert(fridge.isOn());
     fridge.turnOff();
     assert(!fridge.isOn());
+
+    // Тестирование класса KitchenPlan
+
+    KitchenPlan kitchen(500.0, 500.0, 300.0);
+
+    kitchen.addCabinet(cabinet2);
+
+    kitchen.addCabinet(cabinet5);
+
+    kitchen.addAppliance(fridge);
+
+    assert(kitchen.checkPlan() == false);
+
+    // Using polymorphism with a vector of base class pointers
+    std::vector<Furniture*> furniture;
+
+    furniture.push_back(new KitchenCabinet(object2, "Wood"));
+    furniture.push_back(new Appliance("Чайник", object3));
+
+    for (const auto& f : furniture) {
+        f->identify();  // Output: It is Wood kitchen cabinet!
+                        // It is Чайник!
+    }
+
+    for (auto& f : furniture) {
+            delete f;
+        }
 
     std::cout << "Все тесты пройдены успешно!" << std::endl;
     return 0;
