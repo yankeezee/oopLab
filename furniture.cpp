@@ -1,144 +1,137 @@
-// Новый магазин кухонных гарнитуров требуется заполнить мебелью и 
-// бытовой техникой. Напишите приложение, проверяющее что мебель и 
-// техника не пересекаются между собой, мебель из разных материалов 
-// находится не ближе двух метров друг к другу, а техника не висит в воздухе.
-
-// Кухонный шкаф: материал, габариты (x, y, z), координаты (x, y, z), метод проверки на 
-// пересечение с другим шкафом в пространстве.
-
-#include <string>
+#include "Furniture.h"
 #include <cassert>
 #include <iostream>
-#include <vector>
-class Furniture
-{
-    protected:
-        double x, y, z;  // Габариты
-        double coord_x, coord_y, coord_z; // Координаты
-    public:
-        // Проверка на корректность значений
-        void validateDimensions(double x, double y, double z) const {
-        assert(x > 0 && y > 0 && z > 0);
+#include <cmath>
+// Методы класса Furniture
+
+void Furniture::validateDimensions(double x, double y, double z) const {
+    assert(x > 0 && y > 0 && z > 0);
+}
+
+Furniture::Furniture() : x(0), y(0), z(0), coord_x(0), coord_y(0), coord_z(0) {}
+
+Furniture::Furniture(double _x, double _y, double _z, double _coord_x, double _coord_y, double _coord_z) {
+    validateDimensions(_x, _y, _z);
+    x = _x;
+    y = _y;
+    z = _z;
+    coord_x = _coord_x;
+    coord_y = _coord_y;
+    coord_z = _coord_z;
+}
+
+Furniture::Furniture(const Furniture& other)
+    : x(other.x), y(other.y), z(other.z),
+      coord_x(other.coord_x), coord_y(other.coord_y), coord_z(other.coord_z) {}
+
+void Furniture::identify() const {
+    std::cout << "Something it is" << std::endl;
+}
+
+double Furniture::getX() const { return x; }
+double Furniture::getY() const { return y; }
+double Furniture::getZ() const { return z; }
+double Furniture::getCoordX() const { return coord_x; }
+double Furniture::getCoordY() const { return coord_y; }
+double Furniture::getCoordZ() const { return coord_z; }
+
+Furniture::~Furniture() {}
+
+
+// Методы класса KitchenCabinet
+
+KitchenCabinet::KitchenCabinet() : Furniture(), material("") {}
+
+KitchenCabinet::KitchenCabinet(const Furniture& _KitchenCabinet, const std::string& mat)
+    : Furniture(_KitchenCabinet), material(mat) {}
+
+KitchenCabinet::KitchenCabinet(const KitchenCabinet& other)
+    : Furniture(other), material(other.material) {}
+
+std::string KitchenCabinet::getMaterial() const { return material; }
+
+void KitchenCabinet::identify() const {
+    std::cout <<"It is "<< getMaterial() << " kitchen cabinet!"<<std::endl;
+}
+
+bool KitchenCabinet::intersects(const Furniture& other) const {
+    return !((coord_x + x < other.getCoordX() ||
+              coord_x > other.getCoordX() + other.getX()) &&
+             (coord_y + y < other.getCoordY() ||
+              coord_y > other.getCoordY() + other.getY()) &&
+             (coord_z + z < other.getCoordZ() ||
+              coord_z > other.getCoordZ() + other.getZ()));
+}
+
+bool KitchenCabinet::isDistanceSafe(const KitchenCabinet& other) const {
+    if (material != other.getMaterial()) {
+        double distance = std::sqrt(std::pow(coord_x - other.coord_x, 2) +
+                                    std::pow(coord_y - other.coord_y, 2) +
+                                    std::pow(coord_z - other.coord_z, 2));
+        return distance >= 2.0;
     }
-        // Конструктор по умолчанию
-        Furniture(): x(0), y(0), z(0), 
-                     coord_x(0), coord_y(0), coord_z(0) {}
+    return true;
+}
 
-        // Конструктор инициализации
-        Furniture(double _x, double _y, double _z,
-                    double _coord_x, double _coord_y, double _coord_z){
-                        validateDimensions(_x,_y,_z);
-                        x=_x;
-                        y=_y;
-                        z=_z;
-                        coord_x=_coord_x;
-                        coord_y=_coord_y;
-                        coord_z=_coord_z;
-                    }
-             
+// Методы класса Appliance
 
-        // Конструктор копирования
-        Furniture(const Furniture& other)
-            : x(other.x), y(other.y), z(other.z),
-            coord_x(other.coord_x), coord_y(other.coord_y), coord_z(other.coord_z) {}
+void Appliance::validateDimensions(double x, double y, double z) const {
+    assert(x > 0 && y > 0 && z > 0);
+}
 
-        // Методы доступа
-        double getX() const { return x; }
-        double getY() const { return y; }
-        double getZ() const { return z; }
-        double getCoordX() const { return coord_x; }
-        double getCoordY() const { return coord_y; }
-        double getCoordZ() const { return coord_z; }
+Appliance::Appliance() : name(""), is_on(false) {}
 
-};
+Appliance::Appliance(const std::string& _name, const Furniture& _Appliance)
+    : Furniture(_Appliance), name(_name), is_on(false) {}
 
-class KitchenCabinet: public Furniture
-{
-    std::string material;
-    const Furniture& KitchenCab;
-    public:
-        // Конструктор по умолчанию
-        Furniture t;
-        KitchenCabinet(): KitchenCab(t), material(""){}
+Appliance::Appliance(const Appliance& other)
+    : Furniture(other), name(other.name), is_on(other.is_on) {}
 
-        // Конструктор инициализации
-        KitchenCabinet(const Furniture& _KitchenCabiet, const std::string& mat): KitchenCab(_KitchenCabiet), material(mat){}
+void Appliance::identify() const {
+    std::cout <<"It is "<< getName() << "!"<<std::endl;
+}
 
-        // Конструктор копирования
-        KitchenCabinet(const KitchenCabinet& other)
-            : KitchenCab(other.KitchenCab), material(other.material) {}
+std::string Appliance::getName() const { return name; }
+bool Appliance::isOn() const { return is_on; }
+void Appliance::turnOn() { is_on = true; }
+void Appliance::turnOff() { is_on = false; }
 
-        std::string getMaterial() const { return material; };
+bool Appliance::isOnGround() const {
+    return coord_z == 0;
+}
 
-        // Метод проверки на пересечение с другим шкафом
-        bool intersects(const Furniture& other) const {
-            // Проверка, не пересекаются ли по x, y, z координате
-            if ((coord_x + x < other.getCoordX() ||
-                coord_x > other.getCoordX() + other.getX()) &&
-                (coord_y + y < other.getCoordY() ||
-                coord_y > other.getCoordY() + other.getY()) &&
-                (coord_z + z < other.getCoordZ() ||
-                coord_z > other.getCoordZ() + other.getZ())) {
-                return false; // Нет пересечения
+// Методы класса KitchenPlan
+
+KitchenPlan::KitchenPlan(double _width, double _length, double _height)
+    : width(_width), length(_length), height(_height) {}
+
+void KitchenPlan::addCabinet(const KitchenCabinet& cabinet) {
+    cabinets.push_back(cabinet);
+}
+
+void KitchenPlan::addAppliance(const Appliance& appliance) {
+    appliances.push_back(appliance);
+}
+
+bool KitchenPlan::checkPlan() const {
+    for (size_t i = 0; i < cabinets.size(); ++i) {
+        for (size_t j = i + 1; j < cabinets.size(); ++j) {
+            if (cabinets[i].intersects(cabinets[j]) || !cabinets[i].isDistanceSafe(cabinets[j])) {
+                return false;
             }
-            return true; // Пересечение есть
         }
+    }
 
-};
+    for (const auto& appliance : appliances) {
+        if (!appliance.isOnGround()) {
+            return false;
+        }
+        for (const auto& cabinet : cabinets) {
+            if (cabinet.intersects(appliance)) {
+                return false;
+            }
+        }
+    }
 
-int main() {
-
-    // Тестирование конструктора по умолчанию класса Furniture
-    Furniture object1;
-
-    assert(object1.getX() == 0);
-    assert(object1.getY() == 0);
-    assert(object1.getZ() == 0);
-    assert(object1.getCoordX() == 0);
-    assert(object1.getCoordY() == 0);
-    assert(object1.getCoordZ() == 0);
-
-    // Тестирование конструктора по умолчанию класса KitchenCabinet
-    KitchenCabinet cabinet1;
-
-    assert(cabinet1.getMaterial() == "");
-
-    // Тестирование конструктора инициализации класса Furniture
-    Furniture object2(1.5, 2, 0.5, 0, 0, 0.5);
-
-    assert(object2.getX() == 1.5);
-    assert(object2.getY() == 2);
-    assert(object2.getZ() == 0.5);
-    assert(object2.getCoordX() == 0);
-    assert(object2.getCoordY() == 0);
-    assert(object2.getCoordZ() == 0.5);
-
-    // Тестирование конструктора инициализации класса KitchenCabinet
-    KitchenCabinet cabinet2(object2, "Древесина");
-    assert(cabinet2.getMaterial() == "Древесина");
-
-    // Тестирование конструктора копирования класса Furniture
-    Furniture object3(object2);
-    assert(object3.getX() == 1.5);
-    assert(object3.getY() == 2);
-    assert(object3.getZ() == 0.5);
-    assert(object3.getCoordX() == 0);
-    assert(object3.getCoordY() == 0);
-    assert(object3.getCoordZ() == 0.5);
-
-    // Тестирование конструктора копирования класса KitchenCabinet
-    KitchenCabinet cabinet3(cabinet2);
-    assert(cabinet3.getMaterial() == "Древесина");
-
-    // Тестирование метода intersects
-    Furniture object4(1, 1, 0.6, 1, 0, 0.6);
-    Furniture object5(2, 1, 1, 10, 10, 50);
-    KitchenCabinet cabinet4(object4, "ДСП");
-    KitchenCabinet cabinet5(object5, "Металл");
-    assert(!cabinet2.intersects(object5)); // Не должны пересекаться
-
-    assert(cabinet2.intersects(object4)); // Должны пересекаться
-
-    std::cout << "Все тесты пройдены успешно!";
-    return 0;
-};
+    return true;
+}
