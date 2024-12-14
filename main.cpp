@@ -1,94 +1,64 @@
-#include "Furniture.cpp"
-#include <cassert>
 #include <iostream>
+#include <cassert>
+#include "SetOfRestaurants.cpp"
 
 int main() {
-    // Тестирование класса Furniture
-    Furniture object1;
-    assert(object1.getX() == 0);
-    assert(object1.getY() == 0);
-    assert(object1.getZ() == 0);
-    assert(object1.getCoordX() == 0);
-    assert(object1.getCoordY() == 0);
-    assert(object1.getCoordZ() == 0);
+    // Проверки по лабе
+    SetOfRestaurants<std::string> set1;
+    assert(set1.getSize() == 0);
 
-    Furniture object2(0.5,  0.5, 0.5, 0, 0, 0.5);
-    assert(object2.getX() == 0.5);
-    assert(object2.getY() ==  0.5);
-    assert(object2.getZ() == 0.5);
-    assert(object2.getCoordX() == 0);
-    assert(object2.getCoordY() == 0);
-    assert(object2.getCoordZ() == 0.5);
+    set1.insertElement("Restaurant1");
+    assert(set1.getSize() == 1);
 
-    Furniture object3(object2);
-    assert(object2.getX() == 0.5);
-    assert(object2.getY() ==  0.5);
-    assert(object2.getZ() == 0.5);
-    assert(object2.getCoordX() == 0);
-    assert(object2.getCoordY() == 0);
-    assert(object2.getCoordZ() == 0.5);
+    set1.insertElement("Restaurant1");
+    assert(set1.getSize() == 1);
 
-    // Тестирование класса KitchenCabinet
-    KitchenCabinet cabinet1;
-    assert(cabinet1.getMaterial() == "");
+    set1.deleteElement("Restaurant1");
+    assert(set1.getSize() == 0);
 
-    KitchenCabinet cabinet2(object2, "Древесина");
-    assert(cabinet2.getMaterial() == "Древесина");
+    SetOfRestaurants<std::string> set2;
+    set2.insertElement("Restaurant2");
+    set2.clear();
+    assert(set2.getSize() == 0);
 
+    SetOfRestaurants<std::string> set3, set4;
+    set3.insertElement("Restaurant3");
+    SetOfRestaurants<std::string> intersection1 = set3 && set4;
+    assert(intersection1.getSize() == 0);
 
-    KitchenCabinet cabinet3(cabinet2);
-    assert(cabinet3.getMaterial() == "Древесина");
+    SetOfRestaurants<std::string> set5;
+    set5.insertElement("Restaurant4");
+    SetOfRestaurants<std::string> intersection2 = set5 && set5;
+    assert(intersection2.getSize() == set5.getSize());
 
-    Furniture object4(0.6, 0.6, 0.6, 10, 10, 0);
-    Furniture object5(2, 1, 1, 10, 10, 50);
-    KitchenCabinet cabinet4(object4, "ДСП");
-    KitchenCabinet cabinet5(object5, "Металл");
+    SetOfRestaurants<std::string> set6 = set5;
+    assert(set6 == set5);
 
-    assert(!cabinet2.intersects(object5)); 
-    assert(cabinet2.intersects(object4));  
-
-    Furniture* metallConstruct = &cabinet5; 
-    metallConstruct -> identify(); // It is Металл kitchen cabinet!
-
-     // Тестирование класса Appliance
-    Appliance fridge("Холодильник", object4);
-    assert(fridge.getName() == "Холодильник");
-    assert(!fridge.isOn());
-    Furniture* _fridge = &fridge; 
-    _fridge -> identify(); // It is Холодильник!
-
-    fridge.turnOn();
-    assert(fridge.isOn());
-    fridge.turnOff();
-    assert(!fridge.isOn());
-
-    // Тестирование класса KitchenPlan
-
-    KitchenPlan kitchen(500.0, 500.0, 300.0);
-
-    kitchen.addCabinet(cabinet2);
-
-    kitchen.addCabinet(cabinet5);
-
-    kitchen.addAppliance(fridge);
-
-    assert(kitchen.checkPlan() == false);
-
-    // Using polymorphism with a vector of base class pointers
-    std::vector<Furniture*> furniture;
-
-    furniture.push_back(new KitchenCabinet(object2, "Wood"));
-    furniture.push_back(new Appliance("Чайник", object3));
-
-    for (const auto& f : furniture) {
-        f->identify();  // Output: It is Wood kitchen cabinet!
-                        // It is Чайник!
-    }
-
-    for (auto& f : furniture) {
-            delete f;
-        }
+    set5.saveToFile("set5.txt");
+    SetOfRestaurants<std::string> set7;
+    set7.loadFromFile("set5.txt");
+    assert(set7 == set5);
 
     std::cout << "Все тесты пройдены успешно!" << std::endl;
+
+    // Работа задания
+    SetOfRestaurants<std::string> writer1, writer2, writer3;
+
+    writer1.insertElement("Restaurant A");
+    writer1.insertElement("Restaurant B");
+    writer1.insertElement("Restaurant C");
+
+    writer2.insertElement("Restaurant B");
+    writer2.insertElement("Restaurant C");
+    writer2.insertElement("Restaurant D");
+
+    writer3.insertElement("Restaurant C");
+    writer3.insertElement("Restaurant E");
+    writer3.insertElement("Restaurant B");
+
+    SetOfRestaurants<std::string> commonRestaurants = writer1 && writer2 && writer3;
+
+    std::cout << "Common Restaurants for all writers: " << std::endl;
+    commonRestaurants.printElements();
     return 0;
 }
